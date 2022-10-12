@@ -1,0 +1,3 @@
+pip install tk
+pip3 install pillow
+pip install pygame
