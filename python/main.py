@@ -127,6 +127,7 @@ if __name__ == '__main__':
             cv2.destroyWindow("test")
             cv2.imwrite("img/img.png", frame)
             frame_origin = cv2.imread("img/img.png")
+            # TODO: 카메라 사진 찍은거 밭아서
             frame_drawn = frame_origin.copy()
 
             class_name = yolo(score_threshold=0.4, nms_threshold=0.4)

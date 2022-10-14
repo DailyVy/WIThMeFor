@@ -5,6 +5,7 @@ from PIL import Image, ImageTk
 # Explicit imports to satisfy Flake8
 from tkinter import Tk, Canvas, Entry, Text, Button, PhotoImage, Toplevel
 import pygame
+import os.path
 
 assets_root_path = "./assets"
 
@@ -105,10 +106,7 @@ class App:
         위에 헤더부분 설정
         :return: 
         """
-        if _img is not None:
-            img = _img
-        else:
-            img = Image.open(f"{assets_root_path}/image/해더.png")
+        img = Image.open(f"{assets_root_path}/image/해더.png")
         img = img.resize((385, 70), Image.ANTIALIAS)  # 크기는 조정하지 않는것을 추천 이미 알맞게 설정되어있음
         self.header_image = ImageTk.PhotoImage(img)  # 클래스 맴버변수로 사용해야지 이미지가 나온다 참 이상하다
         self.app.create_image(
@@ -129,10 +127,11 @@ class App:
             573.0,
             fill="#FFFFFF",
             outline="")
-        if _img is not None:
-            img = _img
-        else:
+
+        if os.path.exists(f"{assets_root_path}/image/{self.pill_name}.png"):
             img = Image.open(f"{assets_root_path}/image/{self.pill_name}.png")
+        else:
+            img = Image.open(f"{assets_root_path}/image/not_find_image.png")
         img = img.resize((319, 481), Image.ANTIALIAS)
         self.capture_img = ImageTk.PhotoImage(img)
         self.app.create_image(
@@ -196,7 +195,7 @@ class App:
         img = Image.open(f"{assets_root_path}/image/복용법.png")
         img = img.resize((105, 105), Image.ANTIALIAS)
         self.key1_img = ImageTk.PhotoImage(img)
-        key1 = tk.Button(self.window, image=self.key1_img)
+        key1 = tk.Button(self.window, image=self.key1_img, bg=self.color)
         key1.place(x=15, y=582)
         key1.bind("<Button-1>", self.onClick_Dosage)
 
@@ -215,9 +214,10 @@ class App:
         img = Image.open(f"{assets_root_path}/image/부작용.png")
         img = img.resize((105, 105), Image.ANTIALIAS)
         self.key2_img = ImageTk.PhotoImage(img)
-        key2 = tk.Button(self.window, image=self.key2_img)
+        key2 = tk.Button(self.window, image=self.key2_img, bg=self.color)
         key2.place(x=130, y=582)
         key2.bind("<Button-1>", self.onClick_side_effect)
+        # key2.bind("<Button-1>", self.onClick_Dosage)
 
         # key3(재촬영 버튼) ====================================================================================
         # key3 = self.round_rectangle(250, 582, 359, 691, fill="#50392D", outline="")
@@ -234,7 +234,7 @@ class App:
         img = Image.open(f"{assets_root_path}/image/재촬영.png")
         img = img.resize((105, 105), Image.ANTIALIAS)
         self.key3_img = ImageTk.PhotoImage(img)
-        key3 = tk.Button(self.window, image=self.key3_img)
+        key3 = tk.Button(self.window, image=self.key3_img, bg=self.color)
         key3.place(x=245, y=582)
         key3.bind("<Button-1>", self.onClick_close)
 
@@ -245,6 +245,7 @@ class App:
         :return: None
         """
         music_file = f"{assets_root_path}/sound/{self.pill_name}.mp3"  # mp3 or mid file
+        print(music_file)
         freq = 16000  # sampling rate, 44100(CD), 16000(Naver TTS), 24000(google TTS)
         bitsize = -16  # signed 16 bit. support 8,-8,16,-16
         channels = 1  # 1 is mono, 2 is stereo
@@ -264,8 +265,7 @@ class App:
         :param a: 리스너로 사용하기 때문에 딱히 사용하지 않는다
         :return: None
         """
-        music_file = f"{assets_root_path}/sound/bearse.mp3"  # mp3 or mid file
-        # music_file = f"./sound/{self.pill_name}_side_effect.mp3"  # TODO: 부작용 음성 필요 (file name format, pillname_side_effect)
+        music_file = f"{assets_root_path}/sound/{self.pill_name}_side_effect.mp3"
         freq = 16000  # sampling rate, 44100(CD), 16000(Naver TTS), 24000(google TTS)
         bitsize = -16  # signed 16 bit. support 8,-8,16,-16
         channels = 1  # 1 is mono, 2 is stereo
@@ -286,6 +286,7 @@ class App:
         :return: None
         """
         self.window.destroy()
+        self.window = None
 
     # def round_rectangle(self, x1, y1, x2, y2, r=25, **kwargs):
     #     """
@@ -305,8 +306,3 @@ class App:
     #         y2, x1 + r, y2, x1, y2, x1, y2 - r, x1, y2 - r,
     #         x1, y1 + r, x1, y1 + r, x1, y1)
     #     return self.app.create_polygon(points, **kwargs, smooth=True)
-
-
-# sample code =================================================================================================
-app = App("pancol-A")
-# app = App("tyrenol")
