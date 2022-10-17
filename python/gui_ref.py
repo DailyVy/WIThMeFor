@@ -31,8 +31,8 @@ def round_rectangle(x1, y1, x2, y2, r=25, **kwargs):
 
 # 버튼 클릭 이벤트 핸들러
 def onClick(a):
-    # music_file = "C:/Users/AI-00/PycharmProjects/Tkinter-Designer-master/sound/pancol-A.mp3"  # mp3 or mid file
-    music_file = "./sound/pancol-A.mp3"  # mp3 or mid file
+    # music_file = "C:/Users/AI-00/PycharmProjects/Tkinter-Designer-master/sound/pancolA.mp3"  # mp3 or mid file
+    music_file = "./sound/pancolA.mp3"  # mp3 or mid file
     freq = 16000  # sampling rate, 44100(CD), 16000(Naver TTS), 24000(google TTS)
     bitsize = -16  # signed 16 bit. support 8,-8,16,-16
     channels = 1  # 1 is mono, 2 is stereo

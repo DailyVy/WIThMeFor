@@ -1,11 +1,14 @@
 from pathlib import Path
 import tkinter as tk
+
+import PIL.Image
 from PIL import Image, ImageTk
 # from tkinter import *
 # Explicit imports to satisfy Flake8
 from tkinter import Tk, Canvas, Entry, Text, Button, PhotoImage, Toplevel
 import pygame
 import os.path
+import cv2
 
 assets_root_path = "./assets"
 
@@ -19,7 +22,7 @@ class App:
         :param _color: 앱 배경 색상
         """
 
-        self.pill_name = _class_id  #
+        self.pill_name = _class_id[0]
         self.color = _color
 
         self.header_image = None
@@ -128,12 +131,16 @@ class App:
             fill="#FFFFFF",
             outline="")
 
-        if os.path.exists(f"{assets_root_path}/image/{self.pill_name}.png"):
-            img = Image.open(f"{assets_root_path}/image/{self.pill_name}.png")
-        else:
-            img = Image.open(f"{assets_root_path}/image/not_find_image.png")
-        img = img.resize((319, 481), Image.ANTIALIAS)
-        self.capture_img = ImageTk.PhotoImage(img)
+        # if os.path.exists(f"{assets_root_path}/image/{self.pill_name}.png"):
+        #     img = _img.copy()
+        # else:
+        #     img = Image.open(f"{assets_root_path}/image/not_find_image.png")
+
+        img = _img.copy()
+        # img = img.resize((319, 481), Image.ANTIALIAS) # ndarray로 넘어오기 때문에 해당 코드는 사용하지 못함 ㅋㅋ루삥뽕
+        img = cv2.resize(img, dsize=(319, 481))
+        img = cv2.cvtColor(img, cv2.COLOR_RGB2BGR)
+        self.capture_img = ImageTk.PhotoImage(image=PIL.Image.fromarray(img))
         self.app.create_image(
             187.0, 332.0,
             image=self.capture_img

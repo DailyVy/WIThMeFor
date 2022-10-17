@@ -2,15 +2,17 @@ import cv2
 import os
 import numpy as np
 from model.yolo_class import classes
+from gui import *
 
 nms_boxes = {}
+
 
 def yolo(score_threshold, nms_threshold):
     # YOLO 네트워크 불러오기
     net = cv2.dnn.readNet(f"model/aiways_20000.weights", "model/aiways.cfg")
     layer_names = net.getLayerNames()
-    output_layers = [layer_names[i[0] - 1] for i in net.getUnconnectedOutLayers()]
-    # output_layers = [layer_names[i - 1] for i in net.getUnconnectedOutLayers()]
+    # output_layers = [layer_names[i[0] - 1] for i in net.getUnconnectedOutLayers()]
+    output_layers = [layer_names[i - 1] for i in net.getUnconnectedOutLayers()]
 
     # GPU 사용
     net.setPreferableBackend(cv2.dnn.DNN_BACKEND_CUDA)
@@ -84,7 +86,6 @@ def yolo(score_threshold, nms_threshold):
 
             re_class.append(class_name)
 
-
             # 중복된 객체를 이름 뒤 숫자를 추가하여 구분
             class_name += '_1'
             num = 1
@@ -106,7 +107,8 @@ def yolo(score_threshold, nms_threshold):
                 f"│ [{class_name}] conf: {confidences[i]} / x: {x} / y: {y} / width: {w} / height: {h}".ljust(91, ' ')))
             nms_boxes[class_name] = [x, y, w, h]
 
-    return re_class
+    return re_class, boxes
+
 
 switch = True
 
@@ -127,17 +129,19 @@ if __name__ == '__main__':
             cv2.destroyWindow("test")
             cv2.imwrite("img/img.png", frame)
             frame_origin = cv2.imread("img/img.png")
-            # TODO: 카메라 사진 찍은거 밭아서
             frame_drawn = frame_origin.copy()
 
-            class_name = yolo(score_threshold=0.4, nms_threshold=0.4)
+            class_name, box = yolo(score_threshold=0.4, nms_threshold=0.4)
+            print(f"type(class_name)={type(class_name)}, {class_name}")
+            # TODO: 카메라 사진 찍은거 받아서 App으로 보내기
 
+            if class_name is not None:
+                app = App(_class_id=class_name, _img=frame_drawn[box[0][1]:box[0][1] + box[0][3], box[0][0]:box[0][0] + box[0][2]])
 
-            # GUI
-            cv2.imshow("test2", frame_drawn)
-            print(class_name)
-            cv2.waitKey(0)
-            cv2.destroyWindow("test2")
+            # cv2.imshow("test2", frame_drawn)
+            # print(class_name)
+            # cv2.waitKey(0)
+            # cv2.destroyWindow("test2")
 
         if cv2.waitKey(1) == ord('v'):
             break
