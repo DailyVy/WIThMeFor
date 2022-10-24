@@ -126,26 +126,25 @@ class App:
         y = self.box[1]
         w = self.box[2]
         h = self.box[3]
-        print(f"x={x},y={y},x2(x+w)={x+w},y2(y+h)={y+h}")
+        print(f"x={x},y={y},x2(x+w)={x + w},y2(y+h)={y + h}")
 
-        mid_h = y + (h//2)
-        mid_w = x + (w//2)
+        mid_h = y + (h // 2)
+        mid_w = x + (w // 2)
         print(f"mid_h={mid_h}, mid_w={mid_w}")
 
         img = self.capture_img.copy()
         print(img.shape)
         # 아몰랑 알아서 짜 ㅋ   =========================================
         # ㅋㅋㄹ삥뽕
-        img = img[mid_h-(standard_h // 2): mid_h + standard_h // 2, mid_w - standard_w // 2: mid_w + standard_w // 2, :]
-
-
+        img = img[mid_h - (standard_h // 2): mid_h + standard_h // 2,
+              mid_w - standard_w // 2: mid_w + standard_w // 2,
+              :]
 
         # ============================================================
         return img
 
     def __capture_img_out_range(self):
         pass
-
 
     def __capture_img_make_standard_test(self):
         print("[info] use __capture_img_make_standard_test()")
@@ -155,12 +154,11 @@ class App:
         y = self.box[1]
         w = self.box[2]
         h = self.box[3]
-        print(f"x={x},y={y},w={w}, h={h}, x2(x+w)={x+w},y2(y+h)={y+h}")
+        print(f"x={x},y={y},w={w}, h={h}, x2(x+w)={x + w},y2(y+h)={y + h}")
 
-        box_mid_h = y + (h//2)
-        box_mid_w = x + (w//2)
+        box_mid_h = y + (h // 2)
+        box_mid_w = x + (w // 2)
         print(f"mid_h={box_mid_h}, mid_w={box_mid_w}")
-
 
         img = self.capture_img.copy()
         print(img.shape)
@@ -396,3 +394,53 @@ class App:
     #         y2, x1 + r, y2, x1, y2, x1, y2 - r, x1, y2 - r,
     #         x1, y1 + r, x1, y1 + r, x1, y1)
     #     return self.app.create_polygon(points, **kwargs, smooth=True)
+
+
+def __test(_img):
+    img = _img.copy()
+    print(f"img.shape()={img.shape}")
+    frame_h = 390
+    frame_w = 318
+    x, y, w, h = 168, 80, 134, 154
+    half_w = w // 2
+    half_h = h // 2
+    box_w_mid = x + w // 2
+    box_h_mid = y + h // 2
+    top, bottom, left, right = 0, 0, 0, 0
+
+    img = cv2.line(img, (box_w_mid, box_h_mid), (box_w_mid, box_h_mid), (0, 0, 255), 5)
+    if h <= w:
+       pass
+    else:
+        top = box_h_mid - frame_h
+        bottom = box_h_mid + frame_h
+        left = box_w_mid - frame_w
+        right = box_w_mid + frame_w
+
+    if top < 0:
+        bottom += abs(top)
+        top = 0
+    elif bottom >= frame_h:
+        top -= abs(bottom-frame_h)
+        bottom = frame_h - 1
+    elif left < 0:
+        right += abs(left)
+        left = 0
+    elif right >= frame_w:
+        left -= abs(right - frame_w)
+        right = frame_w - 1
+
+    print(f"({bottom-top}, {right-left}, 3)")
+    print(f"top={top}, bottom={bottom}, left={left}, right={right}")
+    return img[top:bottom, left:right, :]
+
+
+img = cv2.imread("./img/img.png")
+img = __test(img)
+
+while True:
+    cv2.imshow("original", img)
+    key = cv2.waitKey(10)
+    if key == ord('q'):
+        break
+
