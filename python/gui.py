@@ -14,7 +14,7 @@ assets_root_path = "./assets"
 
 
 class App:
-    def __init__(self, _class_id=None, _img=None, _window_size=(375, 700), _color="#FBD65C"):
+    def __init__(self, _class_id=None, _img=None, _box=None, _window_size=(375, 700), _color="#FBD65C"):
         """
         App 클래스 생성 + 실행
         :param _class_id: 약 클래스 이름
@@ -28,7 +28,8 @@ class App:
         self.header_image = None
 
         self.capture_img_text = None
-        self.capture_img = None
+        self.capture_img = _img
+        self.box = _box[0]  # [x, y, w, h]
 
         self.key1_img = None
         self.key2_img = None
@@ -51,12 +52,12 @@ class App:
         )
         self.app.place(x=0, y=0)
 
-        self.header_init()          # 헤더 init
-        self.capture_img_init(_img=_img)     # 캡처된 이미지 init
-        self.button_init()          # 버튼 리스너 init
-        
+        self.header_init()  # 헤더 init
+        self.capture_img_init(_img=_img)  # 캡처된 이미지 init
+        self.button_init()  # 버튼 리스너 init
+
         # 실행
-        self.window.resizable(False, False) # 윈도우 크기 고정
+        self.window.resizable(False, False)  # 윈도우 크기 고정
         self.window.mainloop()  # 시행
 
     # def head_init(self):
@@ -117,6 +118,82 @@ class App:
             image=self.header_image
         )
 
+    def __capture_img_make_standard(self):
+        print("[info] use __capture_img_make_standard()")
+        standard_h = 390
+        standard_w = 318
+        x = self.box[0]
+        y = self.box[1]
+        w = self.box[2]
+        h = self.box[3]
+        print(f"x={x},y={y},x2(x+w)={x+w},y2(y+h)={y+h}")
+
+        mid_h = y + (h//2)
+        mid_w = x + (w//2)
+        print(f"mid_h={mid_h}, mid_w={mid_w}")
+
+        img = self.capture_img.copy()
+        print(img.shape)
+        # 아몰랑 알아서 짜 ㅋ   =========================================
+        # ㅋㅋㄹ삥뽕
+        img = img[mid_h-(standard_h // 2): mid_h + standard_h // 2, mid_w - standard_w // 2: mid_w + standard_w // 2, :]
+
+
+
+        # ============================================================
+        return img
+
+    def __capture_img_out_range(self):
+        pass
+
+
+    def __capture_img_make_standard_test(self):
+        print("[info] use __capture_img_make_standard_test()")
+        standard_h = 390
+        standard_w = 318
+        x = self.box[0]
+        y = self.box[1]
+        w = self.box[2]
+        h = self.box[3]
+        print(f"x={x},y={y},w={w}, h={h}, x2(x+w)={x+w},y2(y+h)={y+h}")
+
+        box_mid_h = y + (h//2)
+        box_mid_w = x + (w//2)
+        print(f"mid_h={box_mid_h}, mid_w={box_mid_w}")
+
+
+        img = self.capture_img.copy()
+        print(img.shape)
+        # 아몰랑 알아서 짜 ㅋ  =========================================
+        # ㅋㅋㄹ삥뽕
+
+        half_h = standard_h // 2
+        half_w = standard_w // 2
+        top, bottom, left, right = 0, 0, 0, 0
+        h_w_ratio = 1.126
+
+        if h > standard_h and w > standard_w:
+            if h > w:
+                pass
+
+            elif w < w:
+                pass
+            else:
+                pass
+
+        elif h > standard_h:
+            pass
+        elif w > standard_w:
+            pass
+
+        img = img[top:bottom, left:right, :]
+        print(f"left={left}")
+        print(f"right={right}")
+        print(f"top={top}")
+        print(f"bottom={bottom}")
+        # ============================================================
+        return img
+
     def capture_img_init(self, _img=None):
         """
         촬영된 사진 띄우기
@@ -132,27 +209,33 @@ class App:
             outline="")
 
         # if os.path.exists(f"{assets_root_path}/image/{self.pill_name}.png"):
-        #     img = _img.copy()
+        img = _img.copy()
         # else:
         #     img = Image.open(f"{assets_root_path}/image/not_find_image.png")
 
-        img = _img.copy()
         # img = img.resize((319, 481), Image.ANTIALIAS) # ndarray로 넘어오기 때문에 해당 코드는 사용하지 못함 ㅋㅋ루삥뽕
-        img = cv2.resize(img, dsize=(319, 481))
+        # original code ======================================
+        img = cv2.resize(img, dsize=(318, 390))
+        # test_code ==========================================
+        # img = self.__capture_img_make_standard()
+        # img = self.__capture_img_make_standard_test()
+        # ==========================================
+        print(img.shape)
         img = cv2.cvtColor(img, cv2.COLOR_RGB2BGR)
         self.capture_img = ImageTk.PhotoImage(image=PIL.Image.fromarray(img))
         self.app.create_image(
-            187.0, 332.0,
+            187.0, 380.0,
             image=self.capture_img
         )
+        # 기존 187.0, 332.0c
 
         # 약 종류에 따른 말풍선 이미지 =========================================================================
         # TODO: 투명도 설정을 못함 이미지 자체를 투명도를 조정해서 저장 해야 할 것으로 보임
         img = Image.open(f"{assets_root_path}/image/{self.pill_name}_text.png")
-        img = img.resize((300, 120), Image.ANTIALIAS)
+        img = img.resize((318, 100), Image.ANTIALIAS)
         self.capture_img_text = ImageTk.PhotoImage(img)
         self.app.create_image(
-            185.0, 160.0,
+            188.0, 140.0,
             image=self.capture_img_text
         )
 

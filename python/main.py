@@ -132,11 +132,13 @@ if __name__ == '__main__':
             frame_drawn = frame_origin.copy()
 
             class_name, box = yolo(score_threshold=0.4, nms_threshold=0.4)
-            print(f"type(class_name)={type(class_name)}, {class_name}")
-            # TODO: 카메라 사진 찍은거 받아서 App으로 보내기
 
+
+            # TODO: 카메라 사진 찍은거 받아서 App으로 보내기
+            # print(f"type(class_name)={type(class_name)}, {class_name}")   # 타입 확인용
             if class_name is not None:
-                app = App(_class_id=class_name, _img=frame_drawn[box[0][1]:box[0][1] + box[0][3], box[0][0]:box[0][0] + box[0][2]])
+                # app = App(_class_id=class_name, _img=frame_origin[box[0][1]:box[0][1] + box[0][3], box[0][0]:box[0][0] + box[0][2]])
+                app = App(_class_id=class_name, _img=frame_origin, _box=box)
 
             # cv2.imshow("test2", frame_drawn)
             # print(class_name)
