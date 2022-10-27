@@ -68,7 +68,7 @@ class App:
 
     def gui_1(self):
         self.background_init()  # 배경 틀 설정
-        
+
         img = Image.open(f"{assets_root_path}/image/capture_button.png")
         img = img.resize((105, 105), Image.ANTIALIAS)
         self.capture_key_img = ImageTk.PhotoImage(img)
@@ -103,7 +103,7 @@ class App:
     def header_init(self, _img=None):
         """
         위에 헤더부분 설정
-        :return: 
+        :return:
         """
         img = Image.open(f"{assets_root_path}/image/해더.png")
         img = img.resize((385, 70), Image.ANTIALIAS)  # 크기는 조정하지 않는것을 추천 이미 알맞게 설정되어있음
@@ -230,7 +230,6 @@ class App:
             188.0, 140.0,
             image=self.capture_img_text
         )
-
 
     def button_init(self):
         """
