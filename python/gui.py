@@ -93,18 +93,7 @@ class App:
     def gui_2(self):
         self.background_init()
 
-        self.header_init()  # 헤더 init
-        self.capture_img_init(_img=self.capture_img)  # 캡처된 이미지 init TODO:캡쳐된 이미지
-        self.button_init()  # 버튼 리스너 init
-
-        self.window.resizable(False, False)  # 윈도우 크기 고정
-        self.window.mainloop()  # 시행
-
-    def header_init(self, _img=None):
-        """
-        위에 헤더부분 설정
-        :return:
-        """
+        # 헤더 이미지 설정 ====================================================================================
         img = Image.open(f"{assets_root_path}/image/해더.png")
         img = img.resize((385, 70), Image.ANTIALIAS)  # 크기는 조정하지 않는것을 추천 이미 알맞게 설정되어있음
         self.header_image = ImageTk.PhotoImage(img)  # 클래스 맴버변수로 사용해야지 이미지가 나온다 참 이상하다
@@ -112,87 +101,7 @@ class App:
             187.0, 30.0,
             image=self.header_image
         )
-
-    def __capture_img_make_standard(self):
-        print("[info] use __capture_img_make_standard()")
-        standard_h = 390
-        standard_w = 318
-        x = self.box[0]
-        y = self.box[1]
-        w = self.box[2]
-        h = self.box[3]
-        print(f"x={x},y={y},x2(x+w)={x + w},y2(y+h)={y + h}")
-
-        mid_h = y + (h // 2)
-        mid_w = x + (w // 2)
-        print(f"mid_h={mid_h}, mid_w={mid_w}")
-
-        img = self.capture_img.copy()
-        print(img.shape)
-        # 아몰랑 알아서 짜 ㅋ   =========================================
-        # ㅋㅋㄹ삥뽕
-        img = img[mid_h - (standard_h // 2): mid_h + standard_h // 2, mid_w - standard_w // 2: mid_w + standard_w // 2,
-              :]
-
-        # ============================================================
-        return img
-
-    def __capture_img_make_standard_test(self):
-        """
-        약 부분만 예쁘게 잘라내기(포기)
-        :return:
-        """
-        print("[info] use __capture_img_make_standard_test()")
-        standard_h = 390
-        standard_w = 318
-        x = self.box[0]
-        y = self.box[1]
-        w = self.box[2]
-        h = self.box[3]
-        print(f"x={x},y={y},w={w}, h={h}, x2(x+w)={x + w},y2(y+h)={y + h}")
-
-        box_mid_h = y + (h // 2)
-        box_mid_w = x + (w // 2)
-        print(f"mid_h={box_mid_h}, mid_w={box_mid_w}")
-
-        img = self.capture_img.copy()
-        print(img.shape)
-        # 아몰랑 알아서 짜 ㅋ  =========================================
-        # ㅋㅋㄹ삥뽕
-
-        half_h = standard_h // 2
-        half_w = standard_w // 2
-        top, bottom, left, right = 0, 0, 0, 0
-        h_w_ratio = 1.126
-
-        if h > standard_h and w > standard_w:
-            if h > w:
-                pass
-
-            elif w < w:
-                pass
-            else:
-                pass
-
-        elif h > standard_h:
-            pass
-        elif w > standard_w:
-            pass
-
-        img = img[top:bottom, left:right, :]
-        print(f"left={left}")
-        print(f"right={right}")
-        print(f"top={top}")
-        print(f"bottom={bottom}")
-        # ============================================================
-        return img
-
-    def capture_img_init(self, _img=None):
-        """
-        촬영된 사진 띄우기
-        :return: None
-        """
-        # 촬영된 이미지 띄우기 ============================================================
+        # 촬영된 이미지 띄우기 ========
         self.app.create_rectangle(
             28.0,
             92.0,
@@ -202,17 +111,17 @@ class App:
             outline="")
 
         # if os.path.exists(f"{assets_root_path}/image/{self.pill_name}.png"):
-        img = _img.copy()
+        img = self.capture_img.copy()
         # else:
         #     img = Image.open(f"{assets_root_path}/image/not_find_image.png")
 
         # img = img.resize((319, 481), Image.ANTIALIAS) # ndarray로 넘어오기 때문에 해당 코드는 사용하지 못함 ㅋㅋ루삥뽕
-        # original code ======================================
+        # original code
         img = cv2.resize(img, dsize=(318, 390))
-        # test_code ==========================================
+        # test_code 
         # img = self.__capture_img_make_standard()
         # img = self.__capture_img_make_standard_test()
-        # ==========================================
+        # =========
         print(img.shape)
         img = cv2.cvtColor(img, cv2.COLOR_RGB2BGR)
         self.capture_img = ImageTk.PhotoImage(image=PIL.Image.fromarray(img))
@@ -222,7 +131,7 @@ class App:
         )
         # 기존 187.0, 332.0c
 
-        # 약 종류에 따른 말풍선 이미지 =========================================================================
+        # 약 종류에 따른 말풍선 이미지 
         img = Image.open(f"{assets_root_path}/image/{self.pill_name}_text.png")
         img = img.resize((318, 100), Image.ANTIALIAS)
         self.capture_img_text = ImageTk.PhotoImage(img)
@@ -231,11 +140,7 @@ class App:
             image=self.capture_img_text
         )
 
-    def button_init(self):
-        """
-        버튼 이미지와 리스너 설정
-        :return: None
-        """
+        # 버튼 셋팅 ==========================================================================================
         img = Image.open(f"{assets_root_path}/image/복용법.png")
         img = img.resize((105, 105), Image.ANTIALIAS)
         self.key1_img = ImageTk.PhotoImage(img)
@@ -256,7 +161,13 @@ class App:
         self.key3_img = ImageTk.PhotoImage(img)
         key3 = tk.Button(self.window, image=self.key3_img, bg=self.color)
         key3.place(x=245, y=582)
-        key3.bind("<Button-1>", self.onClick_close)
+        key3.bind("<Button-1>", self.onClick_close(a=0))
+
+        self.window.resizable(False, False)  # 윈도우 크기 고정
+        self.window.mainloop()  # 시행
+
+
+
 
     def onClick_Dosage(self, a):
         """
@@ -308,27 +219,64 @@ class App:
         self.window.destroy()
         self.window = None
 
-    # def round_rectangle(self, x1, y1, x2, y2, r=25, **kwargs):
-    #     """
-    #     테두리가 둥근 네모 그리기
-    #     :param x1: x1
-    #     :param y1: y1
-    #     :param x2: x2
-    #     :param y2: y2
-    #     :param r:  ??
-    #     :param kwargs: Canvas.create_polygon()에서 사용할 수 있는 추가 파라미터
-    #     :return: None
-    #     """
-    #     points = (
-    #         x1 + r, y1, x1 + r, y1, x2 - r, y1, x2 - r, y1,
-    #         x2, y1, x2, y1 + r, x2, y1 + r, x2, y2 - r, x2,
-    #         y2 - r, x2, y2, x2 - r, y2, x2 - r, y2, x1 + r,
-    #         y2, x1 + r, y2, x1, y2, x1, y2 - r, x1, y2 - r,
-    #         x1, y1 + r, x1, y1 + r, x1, y1)
-    #     return self.app.create_polygon(points, **kwargs, smooth=True)
-
     def onClick_capture(self, a):
+        """
+        사진 촬영 버튼
+        :param a: 리스너로 사용하기 때문에 딱히 사용하지 않는다
+        :return: None
+        """
         print("찰칵")
         cv2.imwrite("img/img.png", self.cam.read()[1])
         self.window.destroy()
         self.window = None
+
+
+    def __capture_img_make_standard_test(self):
+        """
+        약 부분만 예쁘게 잘라내기(포기)
+        :return:
+        """
+        print("[info] use __capture_img_make_standard_test()")
+        standard_h = 390
+        standard_w = 318
+        x = self.box[0]
+        y = self.box[1]
+        w = self.box[2]
+        h = self.box[3]
+        print(f"x={x},y={y},w={w}, h={h}, x2(x+w)={x + w},y2(y+h)={y + h}")
+
+        box_mid_h = y + (h // 2)
+        box_mid_w = x + (w // 2)
+        print(f"mid_h={box_mid_h}, mid_w={box_mid_w}")
+
+        img = self.capture_img.copy()
+        print(img.shape)
+        # 아몰랑 알아서 짜 ㅋ  =========================================
+        # ㅋㅋㄹ삥뽕
+
+        half_h = standard_h // 2
+        half_w = standard_w // 2
+        top, bottom, left, right = 0, 0, 0, 0
+        h_w_ratio = 1.126
+
+        if h > standard_h and w > standard_w:
+            if h > w:
+                pass
+
+            elif w < w:
+                pass
+            else:
+                pass
+
+        elif h > standard_h:
+            pass
+        elif w > standard_w:
+            pass
+
+        img = img[top:bottom, left:right, :]
+        print(f"left={left}")
+        print(f"right={right}")
+        print(f"top={top}")
+        print(f"bottom={bottom}")
+        # ============================================================
+        return img
