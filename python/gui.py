@@ -21,26 +21,40 @@ class App:
         :param _window_size: 앱 크기(윈도우 크기) 변경하지 않는것을 추천
         :param _color: 앱 배경 색상
         """
-
-        self.pill_name = _class_id[0]
+        self.window = None
+        self.pill_name = None
         self.color = _color
-
+        self.window_size = _window_size
+        self.cam = cv2.VideoCapture(0)
         self.header_image = None
 
         self.capture_img_text = None
-        self.capture_img = _img
-        self.box = _box[0]  # [x, y, w, h]
+        self.capture_img = None
+        self.cap_img = None
+        # self.box = _box[0]  # [x, y, w, h]
+        self.box = None  # [x, y, w, h]
 
+        self.capture_key_img = None
         self.key1_img = None
         self.key2_img = None
         self.key3_img = None
 
-        self.window = Tk()
         self.window_height = _window_size[1]
         self.window_width = _window_size[0]
-        self.window.geometry(str(self.window_width) + "x" + str(self.window_height))  # 윈도우 베이스 틀 크기
-        self.window.configure(bg=_color)
+        self.app = None
+        # self.header_init()  # 헤더 init
+        # self.capture_img_init(_img=_img)  # 캡처된 이미지 init
+        # self.button_init()  # 버튼 리스너 init
 
+    def set_class_id_box(self, _class_id, _box):
+        self.pill_name = _class_id[0]
+        self.box = _box[0]
+
+    def background_init(self):
+        self.window = Tk()
+        self.window.geometry(str(self.window_width) + "x" + str(self.window_height))  # 윈도우 베이스 틀 크기
+        # self.window.geometry(f"%dx%d+%dx%d",(self.window_width, self.window_height, self.))  # 윈도우 창 열리는거 위치 고정?
+        self.window.configure(bg=self.color)
         self.app = Canvas(
             self.window,  # GUI 윈도우 객체 창 위에 app 올리기
             bg=self.color,  # 노란색
@@ -52,58 +66,39 @@ class App:
         )
         self.app.place(x=0, y=0)
 
+    def gui_1(self):
+        self.background_init()  # 배경 틀 설정
+        
+        img = Image.open(f"{assets_root_path}/image/capture_button.png")
+        img = img.resize((105, 105), Image.ANTIALIAS)
+        self.capture_key_img = ImageTk.PhotoImage(img)
+        key = tk.Button(self.window, image=self.capture_key_img, bg=self.color)
+        key.place(x=130, y=582)
+        key.bind("<Button-1>", self.onClick_capture)
+        self.window.resizable(False, False)  # 윈도우 크기 고정
+
+        while self.window is not None and self.cam.isOpened():
+            ret, img = self.cam.read()
+            img = cv2.cvtColor(img, cv2.COLOR_RGB2BGR)
+            img_copy = img.copy()
+            self.capture_img = img
+            img_copy = cv2.resize(img_copy, dsize=(318, 390))
+            img_copy = ImageTk.PhotoImage(image=PIL.Image.fromarray(img_copy))
+            self.app.create_image(
+                187.0, 380.0,
+                image=img_copy
+            )
+            self.window.update()
+
+    def gui_2(self):
+        self.background_init()
+
         self.header_init()  # 헤더 init
-        self.capture_img_init(_img=_img)  # 캡처된 이미지 init
+        self.capture_img_init(_img=self.capture_img)  # 캡처된 이미지 init TODO:캡쳐된 이미지
         self.button_init()  # 버튼 리스너 init
 
-        # 실행
         self.window.resizable(False, False)  # 윈도우 크기 고정
         self.window.mainloop()  # 시행
-
-    # def head_init(self):
-    #     self.app.create_rectangle(
-    #         0.0,
-    #         0.0,
-    #         375.0,
-    #         72.0,
-    #         fill="#513A2D",
-    #         outline="")
-    #
-    #     self.app.create_rectangle(
-    #         28.0,
-    #         12.0,
-    #         77.0,
-    #         56.0,
-    #         fill="#FFFFFF",
-    #         outline="")
-    #
-    #     img = Image.open("./image/logo.gif")
-    #     img = img.resize((49, 44), Image.ANTIALIAS)
-    #     # img.show()  # 이거 입력해야 이미지 뜨는건 뭐임?
-    #     self.logo = ImageTk.PhotoImage(img)
-    #     self.app.create_image(
-    #         52.0,
-    #         36.0,
-    #         image=self.logo
-    #     )
-    #
-    #     self.app.create_text(
-    #         82.0,
-    #         25.0,
-    #         anchor="nw",
-    #         text="이거모약",
-    #         fill="#FFFFFF",
-    #         font=("Inter", 30 * -1)
-    #     )
-    #
-    #     self.app.create_text(
-    #         205.0,
-    #         37.0,
-    #         anchor="nw",
-    #         text="님 환영합니다",
-    #         fill="#FFFFFF",
-    #         font=("Inter", 16 * -1)
-    #     )
 
     def header_init(self, _img=None):
         """
@@ -126,28 +121,27 @@ class App:
         y = self.box[1]
         w = self.box[2]
         h = self.box[3]
-        print(f"x={x},y={y},x2(x+w)={x+w},y2(y+h)={y+h}")
+        print(f"x={x},y={y},x2(x+w)={x + w},y2(y+h)={y + h}")
 
-        mid_h = y + (h//2)
-        mid_w = x + (w//2)
+        mid_h = y + (h // 2)
+        mid_w = x + (w // 2)
         print(f"mid_h={mid_h}, mid_w={mid_w}")
 
         img = self.capture_img.copy()
         print(img.shape)
         # 아몰랑 알아서 짜 ㅋ   =========================================
         # ㅋㅋㄹ삥뽕
-        img = img[mid_h-(standard_h // 2): mid_h + standard_h // 2, mid_w - standard_w // 2: mid_w + standard_w // 2, :]
-
-
+        img = img[mid_h - (standard_h // 2): mid_h + standard_h // 2, mid_w - standard_w // 2: mid_w + standard_w // 2,
+              :]
 
         # ============================================================
         return img
 
-    def __capture_img_out_range(self):
-        pass
-
-
     def __capture_img_make_standard_test(self):
+        """
+        약 부분만 예쁘게 잘라내기(포기)
+        :return:
+        """
         print("[info] use __capture_img_make_standard_test()")
         standard_h = 390
         standard_w = 318
@@ -155,12 +149,11 @@ class App:
         y = self.box[1]
         w = self.box[2]
         h = self.box[3]
-        print(f"x={x},y={y},w={w}, h={h}, x2(x+w)={x+w},y2(y+h)={y+h}")
+        print(f"x={x},y={y},w={w}, h={h}, x2(x+w)={x + w},y2(y+h)={y + h}")
 
-        box_mid_h = y + (h//2)
-        box_mid_w = x + (w//2)
+        box_mid_h = y + (h // 2)
+        box_mid_w = x + (w // 2)
         print(f"mid_h={box_mid_h}, mid_w={box_mid_w}")
-
 
         img = self.capture_img.copy()
         print(img.shape)
@@ -230,7 +223,6 @@ class App:
         # 기존 187.0, 332.0c
 
         # 약 종류에 따른 말풍선 이미지 =========================================================================
-        # TODO: 투명도 설정을 못함 이미지 자체를 투명도를 조정해서 저장 해야 할 것으로 보임
         img = Image.open(f"{assets_root_path}/image/{self.pill_name}_text.png")
         img = img.resize((318, 100), Image.ANTIALIAS)
         self.capture_img_text = ImageTk.PhotoImage(img)
@@ -239,67 +231,18 @@ class App:
             image=self.capture_img_text
         )
 
-    # def pill_Explanation_speech_bubble(self, _text="판콜에이 입니다. \n감기에 걸리셨나요?"):
-    #     """
-    #     말풍선 + 안에 텍스트 추가
-    #     :param _text: 말풍선 안에 넣고 싶은 문장
-    #     :return: None
-    #     """
-    #     self.round_rectangle(45, 105, 330, 198, fill="#000015", outline="")  # 둥근 네모 그리기
-    #
-    #     # 텍스트
-    #     self.app.create_text(
-    #         77.0,
-    #         130.0,
-    #         anchor="nw",
-    #         text=_text,  # 대사
-    #         fill="#FFFFFF",
-    #         font=("Inter", 20 * -1)
-    #     )
-    #
-    #     # 말풍선 삼각형 꼭따리
-    #     self.app.create_polygon(
-    #         253, 195,
-    #         273, 215,
-    #         293, 195,
-    #         fill="#000000",
-    #         outline="")
 
     def button_init(self):
         """
         버튼 이미지와 리스너 설정
         :return: None
         """
-        # key1(복용법 버튼) ====================================================================================
-        # key1 = self.round_rectangle(16, 582, 125, 691, fill="#50392D", outline="")
-        # self.app.create_text(
-        #     26.0,
-        #     621.0,
-        #     anchor="nw",
-        #     text="복용법",
-        #     fill="#FFFFFF",
-        #     font=("Inter", 30 * -1)
-        # )
-        # self.app.tag_bind(key1, "<Button-1>", self.onClick_Dosage)
-
         img = Image.open(f"{assets_root_path}/image/복용법.png")
         img = img.resize((105, 105), Image.ANTIALIAS)
         self.key1_img = ImageTk.PhotoImage(img)
         key1 = tk.Button(self.window, image=self.key1_img, bg=self.color)
         key1.place(x=15, y=582)
         key1.bind("<Button-1>", self.onClick_Dosage)
-
-        # key2(부작용 버튼) ====================================================================================
-        # key2 = self.round_rectangle(133, 582, 242, 691, fill="#50392D", outline="")
-        # self.app.create_text(
-        #     144.0,
-        #     621.0,
-        #     anchor="nw",
-        #     text="부작용",
-        #     fill="#FFFFFF",
-        #     font=("Inter", 30 * -1)
-        # )
-        # self.app.tag_bind(key2, "<Button-1>", self.onClick_side_effect)
 
         img = Image.open(f"{assets_root_path}/image/부작용.png")
         img = img.resize((105, 105), Image.ANTIALIAS)
@@ -308,18 +251,6 @@ class App:
         key2.place(x=130, y=582)
         key2.bind("<Button-1>", self.onClick_side_effect)
         # key2.bind("<Button-1>", self.onClick_Dosage)
-
-        # key3(재촬영 버튼) ====================================================================================
-        # key3 = self.round_rectangle(250, 582, 359, 691, fill="#50392D", outline="")
-        # self.app.create_text(
-        #     263.0,
-        #     621.0,
-        #     anchor="nw",
-        #     text="재촬영",
-        #     fill="#FFFFFF",
-        #     font=("Inter", 30 * -1)
-        # )
-        # self.app.tag_bind(key3, "<Button-1>", self.onClick_close)
 
         img = Image.open(f"{assets_root_path}/image/재촬영.png")
         img = img.resize((105, 105), Image.ANTIALIAS)
@@ -396,3 +327,9 @@ class App:
     #         y2, x1 + r, y2, x1, y2, x1, y2 - r, x1, y2 - r,
     #         x1, y1 + r, x1, y1 + r, x1, y1)
     #     return self.app.create_polygon(points, **kwargs, smooth=True)
+
+    def onClick_capture(self, a):
+        print("찰칵")
+        cv2.imwrite("img/img.png", self.cam.read()[1])
+        self.window.destroy()
+        self.window = None
