@@ -41,7 +41,11 @@ class App:
 
         self.window_height = _window_size[1]
         self.window_width = _window_size[0]
+        self.wx = 450
+        self.wy = 150
         self.app = None
+
+        self.clear = False
         # self.header_init()  # 헤더 init
         # self.capture_img_init(_img=_img)  # 캡처된 이미지 init
         # self.button_init()  # 버튼 리스너 init
@@ -52,7 +56,8 @@ class App:
 
     def background_init(self):
         self.window = Tk()
-        self.window.geometry(str(self.window_width) + "x" + str(self.window_height))  # 윈도우 베이스 틀 크기
+        self.window.geometry(str(self.window_width) + "x" + str(self.window_height)
+                             + "+" + str(self.wx) + "+" + str(self.wy))  # 윈도우 베이스 틀 크기
         # self.window.geometry(f"%dx%d+%dx%d",(self.window_width, self.window_height, self.))  # 윈도우 창 열리는거 위치 고정?
         self.window.configure(bg=self.color)
         self.app = Canvas(
@@ -66,9 +71,26 @@ class App:
         )
         self.app.place(x=0, y=0)
 
-    def gui_1(self):
-        self.background_init()  # 배경 틀 설정
+    def gui_1(self, _reshoot_msg=False):
+        print("gui1 setting")
+        self.clear = False
+        # 배경 틀 설정====================================================================================
+        self.background_init()
 
+        # 촬영 유무? 아무튼 확인 메시지 =============================================================
+        img = None
+        if _reshoot_msg:
+            img = Image.open(f"{assets_root_path}/image/reshoot_text.png")
+        else:
+            img = Image.open(f"{assets_root_path}/image/shoot_text.png")
+        img = img.resize((318, 100), Image.ANTIALIAS)
+        self.capture_img_text = ImageTk.PhotoImage(img)
+        self.app.create_image(
+            188.0, 140.0,
+            image=self.capture_img_text
+        )
+
+        # 촬영버튼 =======================================================================================
         img = Image.open(f"{assets_root_path}/image/capture_button.png")
         img = img.resize((105, 105), Image.ANTIALIAS)
         self.capture_key_img = ImageTk.PhotoImage(img)
@@ -76,9 +98,10 @@ class App:
         key.place(x=130, y=582)
         key.bind("<Button-1>", self.onClick_capture)
         self.window.resizable(False, False)  # 윈도우 크기 고정
-
+        sound_flag = True
         while self.window is not None and self.cam.isOpened():
             ret, img = self.cam.read()
+            img = cv2.rotate(img, cv2.ROTATE_90_CLOCKWISE)
             img = cv2.cvtColor(img, cv2.COLOR_RGB2BGR)
             img_copy = img.copy()
             self.capture_img = img
@@ -89,8 +112,17 @@ class App:
                 image=img_copy
             )
             self.window.update()
+            if sound_flag:
+                if _reshoot_msg:
+                    self.cam_reshoot_sound()
+                else:
+                    self.cam_shoot_sound()
+                sound_flag = False
+
 
     def gui_2(self):
+        print("gui2 setting")
+        # 기본 배경 틀 셋팅 ====================================================================================
         self.background_init()
 
         # 헤더 이미지 설정 ====================================================================================
@@ -111,27 +143,19 @@ class App:
             outline="")
 
         # if os.path.exists(f"{assets_root_path}/image/{self.pill_name}.png"):
-        img = self.capture_img.copy()
+        img = self.capture_img  # TODO: self.capture_img format이 PhotoImage다
         # else:
         #     img = Image.open(f"{assets_root_path}/image/not_find_image.png")
 
         # img = img.resize((319, 481), Image.ANTIALIAS) # ndarray로 넘어오기 때문에 해당 코드는 사용하지 못함 ㅋㅋ루삥뽕
-        # original code
         img = cv2.resize(img, dsize=(318, 390))
-        # test_code 
-        # img = self.__capture_img_make_standard()
-        # img = self.__capture_img_make_standard_test()
-        # =========
-        print(img.shape)
-        img = cv2.cvtColor(img, cv2.COLOR_RGB2BGR)
         self.capture_img = ImageTk.PhotoImage(image=PIL.Image.fromarray(img))
         self.app.create_image(
             187.0, 380.0,
             image=self.capture_img
         )
-        # 기존 187.0, 332.0c
 
-        # 약 종류에 따른 말풍선 이미지 
+        # 약 종류에 따른 메시지
         img = Image.open(f"{assets_root_path}/image/{self.pill_name}_text.png")
         img = img.resize((318, 100), Image.ANTIALIAS)
         self.capture_img_text = ImageTk.PhotoImage(img)
@@ -161,9 +185,11 @@ class App:
         self.key3_img = ImageTk.PhotoImage(img)
         key3 = tk.Button(self.window, image=self.key3_img, bg=self.color)
         key3.place(x=245, y=582)
-        key3.bind("<Button-1>", self.onClick_close(a=0))
+        key3.bind("<Button-1>", self.onClick_close)
 
         self.window.resizable(False, False)  # 윈도우 크기 고정
+        # print("약 기본 설명 소리")
+        # self.pill_detection_explain_sound() # 약 detection 했을때 약 이름 + 간단 설명 사운드
         self.window.mainloop()  # 시행
 
 
@@ -175,7 +201,7 @@ class App:
         :param a: 리스너로 사용하기 때문에 딱히 사용하지 않는다
         :return: None
         """
-        music_file = f"{assets_root_path}/sound/{self.pill_name}.mp3"  # mp3 or mid file
+        music_file = f"{assets_root_path}/sound/Dosage_{self.pill_name}.mp3"  # mp3 or mid file
         print(music_file)
         freq = 16000  # sampling rate, 44100(CD), 16000(Naver TTS), 24000(google TTS)
         bitsize = -16  # signed 16 bit. support 8,-8,16,-16
@@ -196,7 +222,53 @@ class App:
         :param a: 리스너로 사용하기 때문에 딱히 사용하지 않는다
         :return: None
         """
-        music_file = f"{assets_root_path}/sound/{self.pill_name}_side_effect.mp3"
+        music_file = f"{assets_root_path}/sound/side_effect_{self.pill_name}.mp3"
+        freq = 16000  # sampling rate, 44100(CD), 16000(Naver TTS), 24000(google TTS)
+        bitsize = -16  # signed 16 bit. support 8,-8,16,-16
+        channels = 1  # 1 is mono, 2 is stereo
+        buffer = 2048  # number of samples (experiment to get right sound)
+        # default : pygame.mixer.init(frequency=22050, size=-16, channels=2, buffer=4096)
+        pygame.mixer.init(freq, bitsize, channels, buffer)
+        pygame.mixer.music.load(music_file)
+        pygame.mixer.music.play()
+        clock = pygame.time.Clock()
+        while pygame.mixer.music.get_busy():
+            clock.tick(30)
+        pygame.mixer.quit()
+
+    def cam_shoot_sound(self):
+        music_file = f"{assets_root_path}/sound/shoot.mp3"
+        freq = 16000  # sampling rate, 44100(CD), 16000(Naver TTS), 24000(google TTS)
+        bitsize = -16  # signed 16 bit. support 8,-8,16,-16
+        channels = 1  # 1 is mono, 2 is stereo
+        buffer = 2048  # number of samples (experiment to get right sound)
+        # default : pygame.mixer.init(frequency=22050, size=-16, channels=2, buffer=4096)
+        pygame.mixer.init(freq, bitsize, channels, buffer)
+        pygame.mixer.music.load(music_file)
+        pygame.mixer.music.play()
+        clock = pygame.time.Clock()
+        while pygame.mixer.music.get_busy():
+            clock.tick(30)
+        pygame.mixer.quit()
+
+
+    def cam_reshoot_sound(self):
+        music_file = f"{assets_root_path}/sound/reshoot.mp3"
+        freq = 16000  # sampling rate, 44100(CD), 16000(Naver TTS), 24000(google TTS)
+        bitsize = -16  # signed 16 bit. support 8,-8,16,-16
+        channels = 1  # 1 is mono, 2 is stereo
+        buffer = 2048  # number of samples (experiment to get right sound)
+        # default : pygame.mixer.init(frequency=22050, size=-16, channels=2, buffer=4096)
+        pygame.mixer.init(freq, bitsize, channels, buffer)
+        pygame.mixer.music.load(music_file)
+        pygame.mixer.music.play()
+        clock = pygame.time.Clock()
+        while pygame.mixer.music.get_busy():
+            clock.tick(30)
+        pygame.mixer.quit()
+
+    def pill_detection_explain_sound(self, ):
+        music_file = f"{assets_root_path}/sound/exp_{self.pill_name}.mp3"
         freq = 16000  # sampling rate, 44100(CD), 16000(Naver TTS), 24000(google TTS)
         bitsize = -16  # signed 16 bit. support 8,-8,16,-16
         channels = 1  # 1 is mono, 2 is stereo
@@ -216,6 +288,7 @@ class App:
         :param a: 리스너로 사용하기 때문에 딱히 사용하지 않는다
         :return: None
         """
+        self.clear = True
         self.window.destroy()
         self.window = None
 

@@ -115,15 +115,22 @@ switch = True
 if __name__ == '__main__':
     app = App()
 
+    app.gui_1(_reshoot_msg=False)
     while True:
-        app.gui_1()
-
         frame_origin = cv2.imread("img/img.png")
         frame_drawn = frame_origin.copy()
         class_name, box = yolo(score_threshold=0.4, nms_threshold=0.4)
 
         if len(class_name) > 0:
+            print('약 찾음')
             app.set_class_id_box(class_name, box)
-            print(app.pill_name)
             app.gui_2()
+
+        if app.clear:
+            app.gui_1(_reshoot_msg=False)
+        else:
+            app.gui_1(_reshoot_msg=True)
+
+
+
 
